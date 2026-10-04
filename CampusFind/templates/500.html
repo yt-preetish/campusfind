@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Server Error - CampusFind{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-icon">500</div>
+    <h1>Server Error</h1>
+    <p>Something went wrong on our end. Please try again later.</p>
+    <div class="error-actions">
+      <a href="{{ url_for('index') }}" class="btn primary">Go Home</a>
+      <a href="{{ url_for('dashboard') }}" class="btn ghost">Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

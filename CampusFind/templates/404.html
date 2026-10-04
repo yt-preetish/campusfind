@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found - CampusFind{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-icon">404</div>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <div class="error-actions">
+      <a href="{{ url_for('index') }}" class="btn primary">Go Home</a>
+      <a href="{{ url_for('items') }}" class="btn ghost">Browse Items</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

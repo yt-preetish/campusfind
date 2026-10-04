@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My Matches - CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">SMART MATCHING</div>
+  <h1>Potential Matches</h1>
+</div>
+
+<div class="section">
+  {% if matches %}
+  <div class="match-list">
+    {% for match in matches %}
+    <div class="match-card-expanded panel">
+      <a href="{{ url_for('item_detail', item_id=match.item_id) }}" class="match-header">
+        <div>
+          <span class="pill {{ match.item_type }}">{{ match.item_type }}</span>
+          <h3>{{ match.item_title }}</h3>
+          <p>📍 {{ match.item_location }} · {{ match.item_date[:10] }}</p>
+        </div>
+        <div class="score">{{ match.score }}%<small>match</small></div>
+      </a>
+      <div class="match-breakdown">
+        <div class="eyebrow">AI MATCH ANALYSIS</div>
+        <div class="match-overall">
+          <strong>Overall similarity: {{ match.score }}%</strong>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:{{ match.score }}%"></div>
+          </div>
+        </div>
+        <div class="match-explanation">
+          <span>Evidence:</span>
+          {% for reason in match.reasons %}
+          <span>✓ {{ reason }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>No potential matches yet</h3>
+    <p>Report more items to increase your chances of finding matches.</p>
+    <a href="{{ url_for('report', itype='lost') }}" class="btn primary">Report Lost Item</a>
+    <a href="{{ url_for('report', itype='found') }}" class="btn ghost">Report Found Item</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}{% block title %}Admin — CampusFind{% endblock %}{% block content %}
+<div class="page-head"><div class="eyebrow">CONTROL CENTER</div><h1>Admin dashboard</h1><p>Verify claims, monitor reports and keep the campus board clean.</p></div>
+
+<div class="stats">
+  <div class="stat"><span>👥</span><div><strong>{{users}}</strong><small>Users</small></div></div>
+  <div class="stat"><span>📋</span><div><strong>{{open_items}}</strong><small>Open reports</small></div></div>
+  <div class="stat"><span>✨</span><div><strong>{{recovered}}</strong><small>Recovered</small></div></div>
+  <div class="stat"><span>🔴</span><div><strong>{{lost_count}}</strong><small>Lost</small></div></div>
+  <div class="stat"><span>🟢</span><div><strong>{{found_count}}</strong><small>Found</small></div></div>
+  <div class="stat"><span>⏳</span><div><strong>{{pending_claims}}</strong><small>Pending claims</small></div></div>
+</div>
+
+<div class="charts-grid">
+  <div class="panel chart-container">
+    <div class="eyebrow">LOST VS FOUND</div>
+    <canvas id="lostFoundChart"></canvas>
+  </div>
+  <div class="panel chart-container">
+    <div class="eyebrow">REPORTS BY CATEGORY</div>
+    <canvas id="categoryChart"></canvas>
+  </div>
+  <div class="panel chart-container">
+    <div class="eyebrow">TOP LOCATIONS</div>
+    <canvas id="locationChart"></canvas>
+  </div>
+  <div class="panel chart-container">
+    <div class="eyebrow">RECOVERY TREND (7 DAYS)</div>
+    <canvas id="recoveryChart"></canvas>
+  </div>
+</div>
+
+<section class="section-head"><h2>Claim requests</h2></section>
+<div class="panel table-wrap"><table><tr><th>Item</th><th>Claimant</th><th>Verification answer</th><th>Status</th><th>Action</th></tr>
+{% for c in claims %}<tr><td><b>{{c.title}}</b></td><td>{{c.claimant_name}}<br><small>{{c.claimant_email}}</small></td><td>{{c.answer}}</td><td><span class="status">{{c.status}}</span></td><td>{% if c.status=='pending' %}<form method="post" action="{{url_for('admin_claim',claim_id=c.id,action='approve')}}" style="display:inline"><button class="btn tiny">Approve</button></form> <form method="post" action="{{url_for('admin_claim',claim_id=c.id,action='reject')}}" style="display:inline"><button class="btn tiny danger-btn">Reject</button></form>{% endif %}</td></tr>{% else %}<tr><td colspan="5">No claim requests.</td></tr>{% endfor %}</table></div>
+
+<section class="section-head"><h2>Recent reports</h2></section>
+<div class="panel table-wrap"><table><tr><th>Item</th><th>Type</th><th>Reporter</th><th>Status</th><th></th></tr>{% for i in recent %}<tr><td><a href="{{url_for('item_detail',item_id=i.id)}}">{{i.title}}</a></td><td>{{i.type}}</td><td>{{i.name}}</td><td>{{i.status}}</td><td>{% if i.status=='open' %}<form method="post" action="{{url_for('remove_item',item_id=i.id)}}"><button class="btn tiny danger-btn">Remove</button></form>{% endif %}</td></tr>{% endfor %}</table></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Lost vs Found Chart
+new Chart(document.getElementById('lostFoundChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Lost', 'Found'],
+    datasets: [{
+      data: [{{lost_count}}, {{found_count}}],
+      backgroundColor: ['#ff5c7a', '#20d6a3'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#f3f6fb' } }
+    }
+  }
+});
+
+// Category Chart
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for c in categories %}'{{c.category}}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+      label: 'Reports',
+      data: [{% for c in categories %}{{c.count}}{% if not loop.last %},{% endif %}{% endfor %}],
+      backgroundColor: '#7c5cff',
+      borderRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { color: '#91a0b5' }, grid: { color: '#243044' } },
+      x: { ticks: { color: '#91a0b5' }, grid: { display: false } }
+    }
+  }
+});
+
+// Location Chart
+new Chart(document.getElementById('locationChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for l in locations %}'{{l.location[:15]}}...'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+      label: 'Reports',
+      data: [{% for l in locations %}{{l.count}}{% if not loop.last %},{% endif %}{% endfor %}],
+      backgroundColor: '#20d6a3',
+      borderRadius: 8
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: { ticks: { color: '#91a0b5' }, grid: { display: false } },
+      x: { beginAtZero: true, ticks: { color: '#91a0b5' }, grid: { color: '#243044' } }
+    }
+  }
+});
+
+// Recovery Trend Chart
+new Chart(document.getElementById('recoveryChart'), {
+  type: 'line',
+  data: {
+    labels: [{% for r in recovery_trend reversed %}'{{r.date}}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+      label: 'Recovered',
+      data: [{% for r in recovery_trend reversed %}{{r.count}}{% if not loop.last %},{% endif %}{% endfor %}],
+      borderColor: '#7c5cff',
+      backgroundColor: 'rgba(124, 92, 255, 0.1)',
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { color: '#91a0b5' }, grid: { color: '#243044' } },
+      x: { ticks: { color: '#91a0b5' }, grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

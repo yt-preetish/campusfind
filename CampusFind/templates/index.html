@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% block title %}CampusFind — Smart Lost & Found{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow">SMART CAMPUS RECOVERY</div>
+    <h1>Lost it?<br><span>Find it.</span></h1>
+    <p>CampusFind connects students, faculty and staff to recover lost belongings faster with intelligent matching and secure claims.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="{{ url_for('report', itype='lost') }}">🔴 I Lost Something</a>
+      <a class="btn ghost" href="{{ url_for('report', itype='found') }}">🟢 I Found Something</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="orbit">✦</div><div class="mini-label">AI MATCH ENGINE</div>
+    <div class="match-number">94<span>%</span></div>
+    <div class="muted">Potential match confidence</div>
+    <div class="match-bars"><i></i><i></i><i></i><i></i></div>
+    <div class="mini-row"><span>📍 Location</span><strong>96%</strong></div>
+    <div class="mini-row"><span>📝 Description</span><strong>89%</strong></div>
+    <div class="mini-row"><span>📅 Date</span><strong>100%</strong></div>
+  </div>
+</section>
+<section class="stats">
+{% for key,label,icon in [('lost','Lost Reports','🔴'),('found','Found Reports','🟢'),('recovered','Recovered','✨'),('users','Campus Users','👥')] %}
+<div class="stat"><span>{{icon}}</span><div><strong>{{ stats[key] }}</strong><small>{{label}}</small></div></div>
+{% endfor %}
+</section>
+<section class="section-head"><div><div class="eyebrow">LIVE CAMPUS BOARD</div><h2>Recent reports</h2></div><a href="{{ url_for('items') }}" class="text-link">View all →</a></section>
+<div class="card-grid">
+{% for item in latest %}
+<a class="item-card" href="{{ url_for('item_detail',item_id=item.id) }}">
+  <div class="item-photo">{% if item.image %}<img src="{{ url_for('static',filename='uploads/'+item.image) }}">{% else %}<span>{{ '🔴' if item.type=='lost' else '🟢' }}</span>{% endif %}</div>
+  <div class="item-body"><div class="pill {{item.type}}">{{item.type|upper}}</div><h3>{{item.title}}</h3><p>{{item.description[:90] }}{% if item.description|length>90 %}…{% endif %}</p><small>📍 {{item.location}} · {{item.date_time[:10]}}</small></div>
+</a>
+{% else %}<div class="empty">No reports yet. Be the first to report an item.</div>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}AI Analytics - CampusFind{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🤖 AI Analytics Dashboard</h1>
+  <p class="muted">Monitor AI performance, match accuracy, and system metrics</p>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <strong>{{ total_analyses }}</strong>
+    <span>Total AI Analyses</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ api_analyses }}</strong>
+    <span>API Analyses</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ local_analyses }}</strong>
+    <span>Local Fallbacks</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ total_matches }}</strong>
+    <span>Total Matches</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ confirmed_matches }}</strong>
+    <span>Confirmed Matches</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ rejected_matches }}</strong>
+    <span>Rejected Matches</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ avg_confidence }}%</strong>
+    <span>Avg Confidence</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ pending_feedback }}</strong>
+    <span>Pending Feedback</span>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Recent AI Matches</h2>
+  {% if recent_matches %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Lost Item</th>
+        <th>Found Item</th>
+        <th>Score</th>
+        <th>Confidence</th>
+        <th>Feedback</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for match in recent_matches %}
+      <tr>
+        <td>{{ match.lost_title }}</td>
+        <td>{{ match.found_title }}</td>
+        <td>{{ "%.1f"|format(match.overall_score) }}%</td>
+        <td>{{ "%.1f"|format(match.confidence_score * 100) if match.confidence_score else "N/A" }}%</td>
+        <td>
+          {% if match.human_feedback == "confirmed" %}
+            <span class="status-badge completed">✓ Confirmed</span>
+          {% elif match.human_feedback == "rejected" %}
+            <span class="status-badge" style="background:var(--danger);color:#fff">✗ Rejected</span>
+          {% else %}
+            <span class="status-badge pending">Pending</span>
+          {% endif %}
+        </td>
+        <td>{{ match.created_at[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No matches recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="section">
+  <h2>AI Configuration</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Current Provider</h3>
+      <p>{{ config.AIConfig.AI_PROVIDER|upper if config.AIConfig.AI_PROVIDER else "Not configured" }}</p>
+    </div>
+    <div class="card">
+      <h3>Embedding Provider</h3>
+      <p>{{ config.AIConfig.EMBEDDING_PROVIDER|upper if config.AIConfig.EMBEDDING_PROVIDER else "Not configured" }}</p>
+    </div>
+    <div class="card">
+      <h3>OCR Provider</h3>
+      <p>{{ config.AIConfig.OCR_PROVIDER|upper if config.AIConfig.OCR_PROVIDER else "Not configured" }}</p>
+    </div>
+    <div class="card">
+      <h3>Fallback Level</h3>
+      <p>{{ config.AIConfig.FALLBACK_LEVEL|upper if config.AIConfig.FALLBACK_LEVEL else "auto" }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Matching Weights</h2>
+  <div class="card-grid">
+    {% for weight_name, weight_value in config.AIConfig.MATCHING_WEIGHTS.items() %}
+    <div class="card">
+      <h3>{{ weight_name|replace('_', ' ')|title }}</h3>
+      <p>{{ "%.0f"|format(weight_value * 100) }}%</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="section">
+  <h2>Quick Actions</h2>
+  <div class="card-grid">
+    <a href="{{ url_for('ai_lab') }}" class="card">
+      <h3>🧪 AI Lab</h3>
+      <p>Test AI matching with custom images</p>
+    </a>
+    <a href="{{ url_for('ai_explanation') }}" class="card">
+      <h3>📚 AI Explanation</h3>
+      <p>How the AI system works</p>
+    </a>
+    <a href="{{ url_for('admin') }}" class="card">
+      <h3>📊 Main Dashboard</h3>
+      <p>View general analytics</p>
+    </a>
+  </div>
+</div>
+{% endblock %}

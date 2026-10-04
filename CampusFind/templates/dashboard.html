@@ -1,0 +1,104 @@
+{% extends "base.html" %}{% block title %}Dashboard — CampusFind{% endblock %}{% block content %}
+<div class="page-head"><div class="eyebrow">MY CAMPUS ACTIVITY</div><h1>Hey, {{current_user.name.split()[0]}} 👋</h1><p>Manage your reports and claim requests.</p></div>
+
+<div class="stats">
+  <div class="stat-card">
+    <strong>{{ stats.lost_count }}</strong>
+    <span>Lost Reports</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ stats.found_count }}</strong>
+    <span>Found Reports</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ stats.recovered_count }}</strong>
+    <span>Recovered</span>
+  </div>
+  <div class="stat-card">
+    <strong>{{ stats.claims_count }}</strong>
+    <span>Claims</span>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="card chart-container">
+    <h3>Reports by Type</h3>
+    <canvas id="typeChart"></canvas>
+  </div>
+  <div class="card chart-container">
+    <h3>Reports by Status</h3>
+    <canvas id="statusChart"></canvas>
+  </div>
+</div>
+
+<div class="quick-actions"><a class="btn primary" href="{{url_for('report',itype='lost')}}">+ Lost item</a><a class="btn ghost" href="{{url_for('report',itype='found')}}">+ Found item</a><a class="btn ghost" href="{{url_for('notifications')}}">🔔 Notifications</a></div>
+
+<section class="section-head"><h2>My reports</h2></section><div class="card-grid">{% for i in items %}
+<a class="item-card compact" href="{{url_for('item_detail',item_id=i.id)}}"><div class="item-body"><div><span class="pill {{i.type}}">{{i.type}}</span> <span class="status">{{i.status}}</span></div><h3>{{i.title}}</h3><small>📍 {{i.location}} · {{i.date_time[:10]}}</small></div></a>
+{% else %}<div class="empty">You haven't reported anything yet.</div>{% endfor %}</div>
+
+<section class="section-head"><h2>My claims</h2></section><div class="panel table-wrap"><table><tr><th>Item</th><th>Status</th><th>Date</th></tr>{% for c in claims %}<tr><td>{{c.title}}</td><td><span class="status">{{c.status}}</span></td><td>{{c.created_at[:10]}}</td></tr>{% else %}<tr><td colspan="3">No claims yet.</td></tr>{% endfor %}</table></div>
+
+<script>
+// Type Chart
+const typeCtx = document.getElementById('typeChart').getContext('2d');
+new Chart(typeCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Lost', 'Found'],
+    datasets: [{
+      data: [{{ stats.lost_count }}, {{ stats.found_count }}],
+      backgroundColor: ['#ff5c7a', '#20d6a3'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#f3f6fb' }
+      }
+    }
+  }
+});
+
+// Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Open', 'Recovered', 'Removed'],
+    datasets: [{
+      label: 'Items',
+      data: [
+        {{ stats.lost_count + stats.found_count - stats.recovered_count }},
+        {{ stats.recovered_count }},
+        0
+      ],
+      backgroundColor: ['#7c5cff', '#20d6a3', '#91a0b5'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#91a0b5' },
+        grid: { color: '#243044' }
+      },
+      x: {
+        ticks: { color: '#91a0b5' },
+        grid: { display: false }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block title %}Notifications — CampusFind{% endblock %}{% block content %}
+<div class="page-head"><div class="eyebrow">UPDATES</div><h1>Notifications</h1></div><div class="panel notification-list">
+{% for n in notifications %}<div class="notification"><div class="nicon">🔔</div><div><b>{{n.message}}</b><small>{{n.created_at}}</small>{% if n.link %}<a href="{{n.link}}">Open →</a>{% endif %}</div></div>{% else %}<div class="empty">You're all caught up.</div>{% endfor %}
+</div>{% endblock %}

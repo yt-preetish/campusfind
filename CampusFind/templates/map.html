@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Campus Map - CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">INTERACTIVE MAP</div>
+  <h1>Campus Map</h1>
+  <p class="muted">View lost and found items across campus locations</p>
+</div>
+
+<div class="filters">
+  <select id="typeFilter" class="btn small">
+    <option value="all">All Types</option>
+    <option value="lost">Lost Items</option>
+    <option value="found">Found Items</option>
+  </select>
+  <select id="categoryFilter" class="btn small">
+    <option value="all">All Categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat }}">{{ cat }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn small" onclick="resetFilters()">Reset Filters</button>
+</div>
+
+<div class="section">
+  <div id="map" data-items="{{ items_json|safe }}" style="height: 500px; border-radius: 12px; border: 1px solid var(--line);"></div>
+</div>
+
+<div class="section">
+  <h3>Campus Locations</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h3>📚 Library</h3>
+      <p>Main library building with study areas</p>
+    </div>
+    <div class="card">
+      <h3>🏛️ Main Block</h3>
+      <p>Administrative and academic offices</p>
+    </div>
+    <div class="card">
+      <h3>🍽️ Cafeteria</h3>
+      <p>Food court and dining area</p>
+    </div>
+    <div class="card">
+      <h3>🏠 Hostel</h3>
+      <p>Student accommodation blocks</p>
+    </div>
+    <div class="card">
+      <h3>🅿️ Parking</h3>
+      <p>Vehicle parking areas</p>
+    </div>
+    <div class="card">
+      <h3>⚽ Sports Ground</h3>
+      <p>Athletic fields and courts</p>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Campus locations with coordinates (example coordinates - adjust for your campus)
+const campusLocations = {
+  "Library": [12.9716, 77.5946],
+  "Main Block": [12.9726, 77.5956],
+  "Cafeteria": [12.9706, 77.5936],
+  "Hostel": [12.9696, 77.5966],
+  "Parking": [12.9736, 77.5926],
+  "Sports Ground": [12.9686, 77.5976],
+  "CSE Block": [12.9746, 77.5986],
+  "Labs": [12.9756, 77.5996],
+  "Auditorium": [12.9766, 77.6006]
+};
+
+// All items data - passed from server
+const mapElement = document.getElementById('map');
+const allItems = JSON.parse(mapElement.dataset.items || '[]');
+
+// Initialize map
+const map = L.map('map').setView([12.9716, 77.5946], 15);
+
+// Add OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Custom icons
+const lostIcon = L.divIcon({
+  className: 'custom-marker lost',
+  html: '🔴',
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
+
+const foundIcon = L.divIcon({
+  className: 'custom-marker found',
+  html: '🟢',
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
+
+// Add markers
+const markers = {};
+
+function addMarkers(items) {
+  // Clear existing markers
+  Object.values(markers).forEach(marker => map.removeLayer(marker));
+  markers = {};
+  
+  items.forEach(item => {
+    const icon = item.type === 'lost' ? lostIcon : foundIcon;
+    const marker = L.marker([item.lat, item.lng], { icon: icon })
+      .addTo(map)
+      .bindPopup(`
+        <div class="popup-content">
+          <strong>${item.title}</strong><br>
+          <span class="pill ${item.type}">${item.type.toUpperCase()}</span><br>
+          Category: ${item.category}<br>
+          Location: ${item.location}<br>
+          Date: ${item.date_time.slice(0, 10)}<br>
+          <a href="/item/${item.id}" target="_blank">View Details</a>
+        </div>
+      `);
+    markers[item.id] = marker;
+  });
+}
+
+// Initial markers
+addMarkers(allItems);
+
+// Add campus location markers
+Object.entries(campusLocations).forEach(([name, coords]) => {
+  L.marker(coords, {
+    icon: L.divIcon({
+      className: 'custom-marker location',
+      html: '📍',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    })
+  })
+  .addTo(map)
+  .bindPopup(`<strong>${name}</strong>`);
+});
+
+// Filter functionality
+document.getElementById('typeFilter').addEventListener('change', filterItems);
+document.getElementById('categoryFilter').addEventListener('change', filterItems);
+
+function filterItems() {
+  const typeFilter = document.getElementById('typeFilter').value;
+  const categoryFilter = document.getElementById('categoryFilter').value;
+  
+  let filtered = allItems;
+  
+  if (typeFilter !== 'all') {
+    filtered = filtered.filter(item => item.type === typeFilter);
+  }
+  
+  if (categoryFilter !== 'all') {
+    filtered = filtered.filter(item => item.category === categoryFilter);
+  }
+  
+  addMarkers(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('typeFilter').value = 'all';
+  document.getElementById('categoryFilter').value = 'all';
+  addMarkers(allItems);
+}
+</script>
+
+<style>
+.custom-marker {
+  font-size: 24px;
+  text-align: center;
+  line-height: 24px;
+}
+
+.popup-content {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.popup-content a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.popup-content a:hover {
+  text-decoration: underline;
+}
+</style>
+{% endblock %}

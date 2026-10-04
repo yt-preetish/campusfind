@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}My Profile - CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">ACCOUNT</div>
+  <h1>My Profile</h1>
+</div>
+
+<div class="section">
+  <div class="card">
+    <h2>Account Information</h2>
+    <div class="profile-info">
+      <div class="info-row">
+        <span>Name</span>
+        <strong>{{ current_user.name }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Email</span>
+        <strong>{{ current_user.email }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Role</span>
+        <strong>{{ current_user.role|title }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Member Since</span>
+        <strong>{{ current_user.created_at[:10] }}</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="card">
+    <h2>Quick Stats</h2>
+    <div class="stats">
+      <div class="stat-card">
+        <strong>{{ stats.lost_count }}</strong>
+        <span>Lost Reports</span>
+      </div>
+      <div class="stat-card">
+        <strong>{{ stats.found_count }}</strong>
+        <span>Found Reports</span>
+      </div>
+      <div class="stat-card">
+        <strong>{{ stats.recovered_count }}</strong>
+        <span>Recovered</span>
+      </div>
+      <div class="stat-card">
+        <strong>{{ stats.claims_count }}</strong>
+        <span>Claims</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="card">
+    <h2>Quick Actions</h2>
+    <div class="card-grid">
+      <a href="{{ url_for('report', itype='lost') }}" class="card">
+        <h3>Report Lost Item</h3>
+        <p>Report something you've lost</p>
+      </a>
+      <a href="{{ url_for('report', itype='found') }}" class="card">
+        <h3>Report Found Item</h3>
+        <p>Report something you found</p>
+      </a>
+      <a href="{{ url_for('my_reports') }}" class="card">
+        <h3>My Reports</h3>
+        <p>View all your reports</p>
+      </a>
+      <a href="{{ url_for('matches') }}" class="card">
+        <h3>My Matches</h3>
+        <p>View potential matches</p>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

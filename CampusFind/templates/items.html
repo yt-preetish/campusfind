@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% block title %}Browse Items — CampusFind{% endblock %}{% block content %}
+<div class="page-head"><div class="eyebrow">CAMPUS BOARD</div><h1>Browse reports</h1><p>Search lost and found reports across campus.</p></div>
+<form class="filters">
+  <input name="q" value="{{request.args.get('q','')}}" placeholder="Search item, description, location...">
+  <select name="type">
+    <option value="">All Types</option>
+    <option value="lost" {% if request.args.get('type')=='lost'%}selected{%endif%}>Lost</option>
+    <option value="found" {% if request.args.get('type')=='found'%}selected{%endif%}>Found</option>
+  </select>
+  <select name="category">
+    <option value="">All Categories</option>
+    {% for c in categories %}
+    <option {% if request.args.get('category')==c %}selected{% endif %}>{{c}}</option>
+    {% endfor %}
+  </select>
+  <select name="sort">
+    <option value="newest" {% if request.args.get('sort','newest')=='newest'%}selected{%endif%}>Newest First</option>
+    <option value="oldest" {% if request.args.get('sort')=='oldest'%}selected{%endif%}>Oldest First</option>
+    <option value="relevance" {% if request.args.get('sort')=='relevance'%}selected{%endif%}>Relevance</option>
+  </select>
+  <button class="btn primary">Search</button>
+  <a href="{{ url_for('items') }}" class="btn ghost">Clear</a>
+</form>
+<div class="card-grid">{% for item in items %}
+<a class="item-card" href="{{url_for('item_detail',item_id=item.id)}}"><div class="item-photo">{% if item.image %}<img src="{{url_for('static',filename='uploads/'+item.image)}}">{% else %}<span>{{'🔴' if item.type=='lost' else '🟢'}}</span>{% endif %}</div>
+<div class="item-body"><div class="pill {{item.type}}">{{item.type|upper}}</div><h3>{{item.title}}</h3><p>{{item.description[:100]}}{% if item.description|length>100 %}…{%endif%}</p><small>📍 {{item.location}} · {{item.name}} · {{item.date_time[:10]}}</small></div></a>
+{% else %}<div class="empty">No matching reports found.</div>{% endfor %}</div>
+{% endblock %}

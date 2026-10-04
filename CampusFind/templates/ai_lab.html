@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}AI Lab - CampusFind{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🧪 AI Lab</h1>
+  <p class="muted">Test the multimodal AI matching engine with custom images</p>
+</div>
+
+<div class="section">
+  <h2>Image Comparison Test</h2>
+  <p class="muted">Upload two images to test AI similarity analysis. This is useful for project demonstrations.</p>
+  
+  <div class="card-grid">
+    <div class="card">
+      <h3>Image A</h3>
+      <input type="file" id="imageA" accept="image/*" class="file-input">
+      <div id="previewA" class="image-preview"></div>
+    </div>
+    <div class="card">
+      <h3>Image B</h3>
+      <input type="file" id="imageB" accept="image/*" class="file-input">
+      <div id="previewB" class="image-preview"></div>
+    </div>
+  </div>
+  
+  <button onclick="analyzeImages()" class="btn">Analyze Similarity</button>
+</div>
+
+<div id="results" class="section" style="display:none;">
+  <h2>AI Analysis Results</h2>
+  
+  <div class="card-grid">
+    <div class="card">
+      <h3>Image A Analysis</h3>
+      <div id="analysisA"></div>
+    </div>
+    <div class="card">
+      <h3>Image B Analysis</h3>
+      <div id="analysisB"></div>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h3>Visual Similarity</h3>
+    <div class="progress-bar">
+      <div id="similarityBar" class="progress-fill" style="width:0%"></div>
+    </div>
+    <p id="similarityScore">0%</p>
+  </div>
+  
+  <div class="card">
+    <h3>Match Explanation</h3>
+    <p id="matchExplanation"></p>
+  </div>
+</div>
+
+<style>
+.file-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.image-preview {
+  width: 100%;
+  height: 200px;
+  background: var(--panel2);
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.progress-bar {
+  height: 20px;
+  background: var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 1s ease;
+}
+</style>
+
+<script>
+let imageAData = null;
+let imageBData = null;
+
+document.getElementById('imageA').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      imageAData = e.target.result;
+      document.getElementById('previewA').innerHTML = '<img src="' + imageAData + '">';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+document.getElementById('imageB').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      imageBData = e.target.result;
+      document.getElementById('previewB').innerHTML = '<img src="' + imageBData + '">';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+async function analyzeImages() {
+  if (!imageAData || !imageBData) {
+    alert('Please upload both images');
+    return;
+  }
+  
+  // Show loading state
+  document.querySelector('button').textContent = 'Analyzing...';
+  document.querySelector('button').disabled = true;
+  
+  try {
+    // Convert base64 to blob
+    const blobA = await fetch(imageAData).then(r => r.blob());
+    const blobB = await fetch(imageBData).then(r => r.blob());
+    
+    // Analyze both images
+    const formDataA = new FormData();
+    formDataA.append('image', blobA);
+    
+    const formDataB = new FormData();
+    formDataB.append('image', blobB);
+    
+    const [responseA, responseB] = await Promise.all([
+      fetch('/api/ai/analyze-image', { method: 'POST', body: formDataA }),
+      fetch('/api/ai/analyze-image', { method: 'POST', body: formDataB })
+    ]);
+    
+    const dataA = await responseA.json();
+    const dataB = await responseB.json();
+    
+    // Display analyses
+    document.getElementById('analysisA').innerHTML = formatAnalysis(dataA.analysis);
+    document.getElementById('analysisB').innerHTML = formatAnalysis(dataB.analysis);
+    
+    // Calculate similarity (simplified for demo)
+    const similarity = calculateSimilarity(dataA.analysis, dataB.analysis);
+    
+    // Display similarity
+    document.getElementById('similarityBar').style.width = similarity + '%';
+    document.getElementById('similarityScore').textContent = similarity.toFixed(1) + '%';
+    
+    // Generate explanation
+    document.getElementById('matchExplanation').textContent = generateExplanation(dataA.analysis, dataB.analysis, similarity);
+    
+    // Show results
+    document.getElementById('results').style.display = 'block';
+    
+  } catch (error) {
+    alert('Error analyzing images: ' + error.message);
+  }
+  
+  document.querySelector('button').textContent = 'Analyze Similarity';
+  document.querySelector('button').disabled = false;
+}
+
+function formatAnalysis(analysis) {
+  return `
+    <p><strong>Object:</strong> ${analysis.object_type || 'N/A'}</p>
+    <p><strong>Category:</strong> ${analysis.category || 'N/A'}</p>
+    <p><strong>Primary Color:</strong> ${analysis.primary_color || 'N/A'}</p>
+    <p><strong>Brand:</strong> ${analysis.brand || 'Not visible'}</p>
+    <p><strong>Features:</strong> ${analysis.features ? analysis.features.join(', ') : 'N/A'}</p>
+    <p><strong>Confidence:</strong> ${(analysis.confidence_score * 100).toFixed(0)}%</p>
+    <p><strong>Method:</strong> ${analysis.analysis_method}</p>
+  `;
+}
+
+function calculateSimilarity(analysisA, analysisB) {
+  let score = 0;
+  
+  // Category match
+  if (analysisA.category === analysisB.category) score += 30;
+  
+  // Color match
+  if (analysisA.primary_color === analysisB.primary_color) score += 25;
+  
+  // Brand match
+  if (analysisA.brand && analysisB.brand && analysisA.brand === analysisB.brand) score += 20;
+  
+  // Features overlap
+  if (analysisA.features && analysisB.features) {
+    const overlap = analysisA.features.filter(f => analysisB.features.includes(f)).length;
+    score += (overlap / Math.max(analysisA.features.length, analysisB.features.length)) * 25;
+  }
+  
+  return Math.min(100, score);
+}
+
+function generateExplanation(analysisA, analysisB, similarity) {
+  let explanation = '';
+  
+  if (similarity > 70) {
+    explanation = 'These images appear to show the same or very similar items. ';
+  } else if (similarity > 40) {
+    explanation = 'These images show items with some similarities but may not be the same. ';
+  } else {
+    explanation = 'These images show different items. ';
+  }
+  
+  if (analysisA.category === analysisB.category) {
+    explanation += 'Both items are in the same category. ';
+  }
+  
+  if (analysisA.primary_color === analysisB.primary_color) {
+    explanation += 'Both items have the same primary color. ';
+  }
+  
+  return explanation;
+}
+</script>
+{% endblock %}

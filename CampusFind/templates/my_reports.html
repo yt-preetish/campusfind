@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}My Reports - CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">MY REPORTS</div>
+  <h1>My Reports</h1>
+</div>
+
+<div class="filters">
+  <button class="btn small active" onclick="filterReports('all')">All</button>
+  <button class="btn small" onclick="filterReports('lost')">Lost</button>
+  <button class="btn small" onclick="filterReports('found')">Found</button>
+  <button class="btn small" onclick="filterReports('open')">Open</button>
+  <button class="btn small" onclick="filterReports('recovered')">Recovered</button>
+</div>
+
+<div class="section">
+  {% if reports %}
+  <div class="report-list">
+    {% for item in reports %}
+    <div class="card report-item" data-type="{{ item.type }}" data-status="{{ item.status }}">
+      <div class="report-header">
+        <span class="pill {{ item.type }}">{{ item.type|upper }}</span>
+        <span class="status-badge {{ item.status }}">{{ item.status|title }}</span>
+      </div>
+      <h3>{{ item.title }}</h3>
+      <p class="muted">{{ item.category }} • {{ item.location }}</p>
+      <p class="muted">{{ item.date_time[:10] }}</p>
+      <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn small">View Details</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>No reports yet</h3>
+    <p>Start by reporting a lost or found item.</p>
+    <a href="{{ url_for('report', itype='lost') }}" class="btn primary">Report Lost Item</a>
+    <a href="{{ url_for('report', itype='found') }}" class="btn ghost">Report Found Item</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function filterReports(filter) {
+  const items = document.querySelectorAll('.report-item');
+  const buttons = document.querySelectorAll('.filters .btn');
+  
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  items.forEach(item => {
+    const type = item.dataset.type;
+    const status = item.dataset.status;
+    
+    if (filter === 'all') {
+      item.style.display = 'block';
+    } else if (filter === 'lost' || filter === 'found') {
+      item.style.display = type === filter ? 'block' : 'none';
+    } else {
+      item.style.display = status === filter ? 'block' : 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

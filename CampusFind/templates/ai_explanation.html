@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}How CampusFind AI Works{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>📚 How CampusFind AI Works</h1>
+  <p class="muted">Explainable AI for college project demonstrations</p>
+</div>
+
+<div class="section">
+  <h2>Overview</h2>
+  <p>CampusFind uses a multimodal AI engine to match lost and found items. The system combines multiple AI techniques to provide accurate, explainable matching results.</p>
+</div>
+
+<div class="section">
+  <h2>1. Image Analysis (Vision AI)</h2>
+  <div class="card">
+    <h3>How It Works</h3>
+    <p>When an image is uploaded, the AI analyzes it to extract:</p>
+    <ul>
+      <li><strong>Object Type:</strong> What the item is (backpack, wallet, phone, etc.)</li>
+      <li><strong>Category:</strong> General category (Electronics, Bag, Wallet, etc.)</li>
+      <li><strong>Colors:</strong> Primary and secondary colors</li>
+      <li><strong>Brand/Logo:</strong> Visible brand names or logos</li>
+      <li><strong>Features:</strong> Distinctive visual characteristics</li>
+      <li><strong>Condition:</strong> Approximate condition (New, Good, Used)</li>
+    </ul>
+    
+    <h3>AI Providers</h3>
+    <p>The system supports multiple AI providers with automatic fallback:</p>
+    <ul>
+      <li><strong>OpenAI Vision API:</strong> Advanced GPT-4 Vision analysis (requires API key)</li>
+      <li><strong>Local Fallback:</strong> Basic color detection and feature extraction (always available)</li>
+    </ul>
+    
+    <h3>Privacy</h3>
+    <p>Images are analyzed securely. Sensitive information detected by OCR is automatically masked.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>2. Text Embeddings</h2>
+  <div class="card">
+    <h3>What Are Embeddings?</h3>
+    <p>Text embeddings convert words and sentences into numerical vectors. Similar concepts have similar vectors, even if they use different words.</p>
+    
+    <h3>Example</h3>
+    <p><strong>"Black backpack"</strong> and <strong>"Dark school bag"</strong> have similar embeddings because they represent similar concepts, even though the words are different.</p>
+    
+    <h3>How We Use It</h3>
+    <p>We generate embeddings for titles, descriptions, and categories. When matching items, we calculate cosine similarity between embeddings to find semantically similar reports.</p>
+    
+    <h3>Cosine Similarity</h3>
+    <p>Cosine similarity measures the angle between two vectors. Values range from 0 (no similarity) to 1 (identical). This is better than exact word matching because it understands meaning.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>3. Image Embeddings</h2>
+  <div class="card">
+    <h3>Visual Similarity</h3>
+    <p>Images are converted into numerical vectors using vision models. Similar images have similar vectors, regardless of angle, lighting, or background.</p>
+    
+    <h3>Robustness</h3>
+    <p>The system remains effective even when:</p>
+    <ul>
+      <li>Photo angle changes</li>
+      <li>Lighting conditions differ</li>
+      <li>Background changes</li>
+      <li>Item is partially covered</li>
+      <li>Image resolution varies</li>
+    </ul>
+    
+    <h3>Providers</h3>
+    <ul>
+      <li><strong>CLIP:</strong> OpenAI's Contrastive Language-Image Pre-training model</li>
+      <li><strong>OpenAI Embeddings:</strong> Text-embedding models</li>
+      <li><strong>Local Fallback:</strong> Basic color histogram features</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section">
+  <h2>4. Multimodal Matching Engine</h2>
+  <div class="card">
+    <h3>The Matching Pipeline</h3>
+    <pre>
+NEW REPORT
+     |
+  ┌──┴──┐
+  |     |
+IMAGE  TEXT
+  |     |
+Embed  Embed
+  |     |
+  └──┬──┘
+     |
+  Metadata Layer
+     |
+  ┌───┼───┬───┬───┬───┐
+  |   |   |   |   |   |
+Loc  Date Cat Col Brand OCR
+  |   |   |   |   |   |
+  └───┴───┴───┴───┴───┘
+     |
+AI MATCH ENGINE
+     |
+Confidence Score
+     |
+Explanation
+    </pre>
+    
+    <h3>Scoring Weights</h3>
+    <p>The final match score combines multiple factors with configurable weights:</p>
+    <ul>
+      <li><strong>Image Similarity:</strong> 30%</li>
+      <li><strong>Text Semantics:</strong> 20%</li>
+      <li><strong>Visual Attributes:</strong> 10%</li>
+      <li><strong>OCR:</strong> 10%</li>
+      <li><strong>Category:</strong> 10%</li>
+      <li><strong>Location:</strong> 10%</li>
+      <li><strong>Date/Time:</strong> 5%</li>
+      <li><strong>Brand/Features:</strong> 5%</li>
+    </ul>
+    
+    <h3>Why Multiple Factors?</h3>
+    <p>No single factor is perfect. By combining multiple signals, we get more accurate and reliable matches. If one factor is weak (e.g., poor image quality), other factors can compensate.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>5. Explainable AI</h2>
+  <div class="card">
+    <h3>Why Explainability Matters</h3>
+    <p>We don't just show a "95% match" score. We explain WHY the system thinks items match and what uncertainties exist.</p>
+    
+    <h3>Match Breakdown</h3>
+    <p>Each match shows:</p>
+    <ul>
+      <li><strong>Overall Confidence:</strong> Final confidence score</li>
+      <li><strong>Component Scores:</strong> Individual factor scores (image, text, location, etc.)</li>
+      <li><strong>Evidence:</strong> What supports this match</li>
+      <li><strong>Uncertainties:</strong> What makes this match uncertain</li>
+      <li><strong>Explanation:</strong> Human-readable summary</li>
+    </ul>
+    
+    <h3>Example Output</h3>
+    <pre>
+Overall confidence: 85%
+
+Evidence:
+✓ Same item category
+✓ Similar visual appearance  
+✓ Similar color
+✓ Same campus area
+✓ Reports are close in time
+
+Uncertainties:
+⚠ Brand could not be confirmed
+⚠ Image angle differs
+    </pre>
+  </div>
+</div>
+
+<div class="section">
+  <h2>6. OCR with Privacy Protection</h2>
+  <div class="card">
+    <h3>What is OCR?</h3>
+    <p>OCR (Optical Character Recognition) extracts text from images. This can detect student IDs, phone numbers, names, and other identifying information.</p>
+    
+    <h3>Privacy Protection</h3>
+    <p><strong>Important:</strong> Sensitive information is NEVER publicly exposed.</p>
+    <ul>
+      <li>OCR results are stored securely in the database</li>
+      <li>Public listings only show "Student ID detected" (not the actual number)</li>
+      <li>Sensitive data is masked: <code>23IT123456</code> → <code>23IT******</code></li>
+      <li>Only admins can view full OCR results</li>
+    </ul>
+    
+    <h3>Verification Questions</h3>
+    <p>OCR helps generate private verification questions without exposing sensitive data:</p>
+    <pre>
+Instead of: "What is your student ID number?"
+We ask: "What are the first two characters of your student ID?"
+    </pre>
+  </div>
+</div>
+
+<div class="section">
+  <h2>7. Confidence vs Similarity</h2>
+  <div class="card">
+    <h3>Important Distinction</h3>
+    <p><strong>Similarity</strong> = How similar items appear based on raw scores</p>
+    <p><strong>Confidence</strong> = How certain we are that this is actually a match</p>
+    
+    <h3>Why They Differ</h3>
+    <p>High similarity doesn't always mean high confidence. We reduce confidence based on:</p>
+    <ul>
+      <li>Missing information</li>
+      <li>Poor image quality</li>
+      <li>Generic descriptions</li>
+      <li>Uncertain location</li>
+      <li>Large time gaps</li>
+    </ul>
+    
+    <h3>Example</h3>
+    <pre>
+Similarity: 96%
+Confidence: 78%
+
+Why lower?
+- Brand uncertain
+- Location approximate  
+- Time difference notable
+    </pre>
+  </div>
+</div>
+
+<div class="section">
+  <h2>8. Human Verification Required</h2>
+  <div class="card">
+    <h3>AI is Not Perfect</h3>
+    <p>AI provides recommendations, but human verification is always required for:</p>
+    <ul>
+      <li>Claim approval</li>
+      <li>Item handover</li>
+      <li>Final recovery confirmation</li>
+    </ul>
+    
+    <h3>Human Feedback Loop</h3>
+    <p>When users confirm or reject AI matches, we record this feedback. This data helps improve the system over time and provides accuracy metrics.</p>
+    
+    <h3>No Automatic Approvals</h3>
+    <p>The system will NEVER automatically approve claims or release valuable items based solely on AI scores. Admins always review and approve.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>9. Fallback Architecture</h2>
+  <div class="card">
+    <h3>Three-Level Fallback</h3>
+    <p>The system works even when external AI services are unavailable:</p>
+    <ul>
+      <li><strong>Level 1:</strong> Advanced external AI (OpenAI Vision, CLIP)</li>
+      <li><strong>Level 2:</strong> Local ML models (sentence-transformers, basic features)</li>
+      <li><strong>Level 3:</strong> Rule-based matching (text similarity, exact matches)</li>
+    </ul>
+    
+    <h3>Automatic Fallback</h3>
+    <p>If an API call fails, the system automatically falls back to the next level. Users see a message like "AI temporarily unavailable, using local matching engine."</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>10. Model Versioning</h3>
+  <div class="card">
+    <h3>Tracking Models</h3>
+    <p>Every AI result records:</p>
+    <ul>
+      <li>Model name (e.g., gpt-4o-mini, CLIP)</li>
+      <li>Model version (e.g., 1.0, 2.0)</li>
+      <li>Analysis timestamp</li>
+    </ul>
+    
+    <h3>Why It Matters</h3>
+    <p>This allows us to:</p>
+    <ul>
+      <li>Track which models perform best</li>
+      <li>Debug issues with specific model versions</li>
+      <li>Audit AI decisions</li>
+      <li>Roll back to previous versions if needed</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section">
+  <h2>11. Configuration</h2>
+  <div class="card">
+    <h3>Environment Variables</h3>
+    <p>All AI configuration is managed through environment variables in <code>.env</code>:</p>
+    <ul>
+      <li><strong>AI_PROVIDER:</strong> openai, local, or hybrid</li>
+      <li><strong>OPENAI_API_KEY:</strong> Your OpenAI API key (optional)</li>
+      <li><strong>EMBEDDING_PROVIDER:</strong> openai, local_clip, or sentence_transformers</li>
+      <li><strong>OCR_PROVIDER:</strong> tesseract, openai, or easyocr</li>
+      <li><strong>WEIGHT_*</strong>: Configurable matching weights</li>
+    </ul>
+    
+    <h3>No Hardcoded Keys</h3>
+    <p>API keys are never hardcoded in the application. They are loaded from environment variables, making the system secure and flexible.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Quick Demo</h2>
+  <div class="card-grid">
+    <a href="{{ url_for('ai_lab') }}" class="card">
+      <h3>🧪 Try AI Lab</h3>
+      <p>Test image similarity with custom uploads</p>
+    </a>
+    <a href="{{ url_for('admin_ai') }}" class="card">
+      <h3>📊 View AI Analytics</h3>
+      <p>See AI performance metrics (admin only)</p>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}{% block title %}Report {{itype|title}} Item — CampusFind{% endblock %}
+{% block content %}
+<div class="page-head"><div class="eyebrow">NEW REPORT</div><h1>Report a {{itype}} item</h1><p>Give enough detail for CampusFind's matching engine to identify potential matches.</p></div>
+<form method="post" enctype="multipart/form-data" class="form panel" id="reportForm">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="two"><label>Item name *<input name="title" required placeholder="e.g. Black Samsung Galaxy Buds"></label>
+<label>Category *<select name="category" required id="categorySelect"><option value="">Select category</option>{% for c in ['Electronics','Wallet','ID Card','Keys','Bags','Books','Clothing','Accessories','Documents','Sports Equipment','Other'] %}<option>{{c}}</option>{% endfor %}</select></label></div>
+<label>Description *<textarea name="description" required placeholder="Color, brand, unique marks, contents, identifying details..."></textarea></label>
+
+<div class="section">
+  <div class="eyebrow">ADDITIONAL DETAILS</div>
+  <div class="two">
+    <label>Brand (optional)<input name="brand" placeholder="e.g. Apple, Nike, Samsung"></label>
+    <label>Model (optional)<input name="model" placeholder="e.g. AirPods Pro, iPhone 13"></label>
+  </div>
+  <div class="two">
+    <label>Primary Color (optional)<input name="color" placeholder="e.g. Black, Blue, Red"></label>
+    <label>Distinctive Features (optional)<input name="features" placeholder="e.g. Scratch on back, sticker, custom case"></label>
+  </div>
+</div>
+
+<div class="section">
+  <div class="eyebrow">LOCATION DETAILS</div>
+  <div class="two">
+    <label>Campus location *<input name="location" required placeholder="e.g. Library, CSE Block"></label>
+    <label>Building (optional)<input name="building" placeholder="e.g. Main Block, Library"></label>
+  </div>
+  <div class="two">
+    <label>Floor (optional)<input name="floor" placeholder="e.g. 1st Floor, 2nd Floor"></label>
+    <label>Date & time *<input type="datetime-local" name="date_time" required></label>
+  </div>
+</div>
+
+<div class="section">
+  <div class="eyebrow">CONTACT PREFERENCE</div>
+  <label>How should we contact you if we find a match?<select name="contact_preference">
+    <option value="email">Email notification</option>
+    <option value="dashboard">Dashboard notification only</option>
+    <option value="both">Both email and dashboard</option>
+  </select></label>
+</div>
+
+<div class="section">
+  <div class="eyebrow">PHOTO UPLOAD</div>
+  <label>Photo <input type="file" name="image" id="imageInput" accept=".jpg,.jpeg,.png,.webp"></label>
+  <div class="notice">Upload a clear photo of the item. This helps AI matching significantly.</div>
+</div>
+
+<button type="submit" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px; margin-top: 20px;">Publish {{itype|title}} Report →</button>
+
+<div id="aiSuggestions" class="ai-suggestions panel" style="display:none;">
+  <div class="eyebrow">🤖 AI IMAGE ANALYSIS</div>
+  <p>Based on your uploaded image, here are suggested details. You can edit them before submitting.</p>
+  <div class="two">
+    <label>Suggested Category<input type="text" id="aiCategory" placeholder="Category from AI"></label>
+    <label>Suggested Color<input type="text" id="aiColor" placeholder="Color from AI"></label>
+  </div>
+  <label>Suggested Brand<input type="text" id="aiBrand" placeholder="Brand (if visible)"></label>
+  <label>Visible Characteristics<textarea id="aiCharacteristics" placeholder="Visual features detected"></label>
+  <div class="notice">These are AI suggestions. Please verify and edit as needed before submitting.</div>
+</div>
+
+<div class="notice">🤖 <b>Smart matching:</b> CampusFind will compare this report with opposite-type open reports using description, location, date, category, and visual features.</div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const imageInput = document.getElementById('imageInput');
+  const aiSuggestions = document.getElementById('aiSuggestions');
+  const categorySelect = document.getElementById('categorySelect');
+  
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      analyzeImage(file);
+    }
+  });
+  
+  function analyzeImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    aiSuggestions.style.display = 'block';
+    aiSuggestions.innerHTML = '<div class="eyebrow">🤖 AI IMAGE ANALYSIS</div><p>Analyzing image...</p>';
+    
+    fetch('/api/ai/analyze-image', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const s = data.suggestions;
+        document.getElementById('aiCategory').value = s.suggested_category || '';
+        document.getElementById('aiColor').value = s.suggested_color || '';
+        document.getElementById('aiBrand').value = s.suggested_brand || '';
+        document.getElementById('aiCharacteristics').value = s.visual_characteristics || '';
+        
+        aiSuggestions.innerHTML = `
+          <div class="eyebrow">🤖 AI IMAGE ANALYSIS</div>
+          <p>Based on your uploaded image, here are suggested details. You can edit them before submitting.</p>
+          <div class="two">
+            <label>Suggested Category<input type="text" id="aiCategory" value="${s.suggested_category || ''}"></label>
+            <label>Suggested Color<input type="text" id="aiColor" value="${s.suggested_color || ''}"></label>
+          </div>
+          <label>Suggested Brand<input type="text" id="aiBrand" value="${s.suggested_brand || ''}"></label>
+          <label>Visible Characteristics<textarea id="aiCharacteristics">${s.visual_characteristics || ''}</textarea></label>
+          <div class="notice">These are AI suggestions. Please verify and edit as needed before submitting.</div>
+        `;
+      } else {
+        aiSuggestions.innerHTML = `<div class="notice">Could not analyze image: ${data.error}</div>`;
+      }
+    })
+    .catch(error => {
+      aiSuggestions.innerHTML = `<div class="notice">Error analyzing image: ${error.message}</div>`;
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}{% block title %}Handover {{record.handover_id}} — CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">ITEM HANDOVER</div>
+  <h1>Handover ID: {{record.handover_id}}</h1>
+  <p>Secure handover confirmation for recovered item: {{record.title}}</p>
+</div>
+
+<div class="panel handover-panel">
+  <div class="handover-status">
+    {% if record.completed_at %}
+      <div class="status-badge completed">✅ Handover Completed</div>
+      <p>Both parties confirmed on {{record.completed_at[:10]}}</p>
+    {% else %}
+      <div class="status-badge pending">⏳ Pending Confirmation</div>
+      <p>Waiting for both parties to confirm</p>
+    {% endif %}
+  </div>
+
+  <div class="handover-details">
+    <div class="detail-row">
+      <span>Item</span>
+      <strong>{{record.title}}</strong>
+    </div>
+    <div class="detail-row">
+      <span>Handover ID</span>
+      <strong>{{record.handover_id}}</strong>
+    </div>
+    <div class="detail-row">
+      <span>Created</span>
+      <strong>{{record.created_at[:10]}}</strong>
+    </div>
+  </div>
+
+  <div class="confirmation-status">
+    <div class="party-status {% if record.finder_confirmed %}confirmed{% else %}pending{% endif %}">
+      <div class="party-icon">🔍</div>
+      <div class="party-info">
+        <strong>Finder (Item Reporter)</strong>
+        {% if record.finder_confirmed %}
+          <span class="confirmed-text">✓ Confirmed on {{record.finder_confirmed_at[:10]}}</span>
+        {% else %}
+          <span class="pending-text">Not yet confirmed</span>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="party-status {% if record.claimant_confirmed %}confirmed{% else %}pending{% endif %}">
+      <div class="party-icon">👤</div>
+      <div class="party-info">
+        <strong>Claimant (Item Owner)</strong>
+        {% if record.claimant_confirmed %}
+          <span class="confirmed-text">✓ Confirmed on {{record.claimant_confirmed_at[:10]}}</span>
+        {% else %}
+          <span class="pending-text">Not yet confirmed</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if not record.completed_at %}
+    <div class="handover-actions">
+      {% if current_user_id == record.item_user_id and not record.finder_confirmed %}
+        <form method="post" action="{{url_for('confirm_handover',handover_id=record.handover_id,role='finder')}}">
+          <button class="btn primary">✓ I have handed over the item</button>
+        </form>
+      {% endif %}
+      
+      {% if current_user_id == record.claimant_id and not record.claimant_confirmed %}
+        <form method="post" action="{{url_for('confirm_handover',handover_id=record.handover_id,role='claimant')}}">
+          <button class="btn primary">✓ I have received the item</button>
+        </form>
+      {% endif %}
+      
+      {% if current_user_id != record.item_user_id and current_user_id != record.claimant_id %}
+        <p class="muted">You are viewing this handover as an admin. Only the finder and claimant can confirm.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="qr-section">
+    <div class="eyebrow">HANDOVER QR CODE</div>
+    <div class="qr-container">
+      <img src="{{url_for('handover_qr',handover_id=record.handover_id)}}" alt="Handover QR Code">
+    </div>
+    <p class="muted">Scan this QR code to access the handover confirmation page.</p>
+    <a href="{{url_for('handover_qr',handover_id=record.handover_id)}}" class="btn ghost small" download>Download QR Code</a>
+  </div>
+</div>
+{% endblock %}

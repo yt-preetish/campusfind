@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Access Denied - CampusFind{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-icon">403</div>
+    <h1>Access Denied</h1>
+    <p>You don't have permission to access this page.</p>
+    <div class="error-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn primary">Go to Dashboard</a>
+      <a href="{{ url_for('index') }}" class="btn ghost">Go Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

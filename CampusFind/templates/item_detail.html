@@ -1,0 +1,79 @@
+{% extends "base.html" %}{% block title %}{{item.title}} — CampusFind{% endblock %}{% block content %}
+<div class="detail-grid"><div>
+<div class="large-photo">{% if item.image %}<img src="{{url_for('static',filename='uploads/'+item.image)}}">{% else %}<span>{{'🔴' if item.type=='lost' else '🟢'}}</span>{% endif %}</div>
+</div><div class="panel">
+<div class="pill {{item.type}}">{{item.type|upper}} ITEM</div><h1>{{item.title}}</h1><p class="lead">{{item.description}}</p>
+<div class="details"><div><span>Category</span><b>{{item.category}}</b></div><div><span>Location</span><b>📍 {{item.location}}</b></div><div><span>Date</span><b>{{item.date_time}}</b></div><div><span>Reported by</span><b>{{item.owner_name}}</b></div></div>
+{% if current_user and item.status=='open' and current_user.id != item.user_id %}
+<form method="post" action="{{url_for('claim',item_id=item.id)}}" class="claim"><h3>Claim this item</h3><p class="muted">Don't reveal sensitive information publicly. Answer a private ownership question.</p><textarea name="answer" required placeholder="Example: What sticker/mark was on the case?"></textarea><button class="btn primary">Submit Claim</button></form>
+{% elif not current_user %}<a class="btn primary full" href="{{url_for('login')}}">Login to submit a claim</a>
+{% endif %}
+</div></div>
+
+<section class="section-head"><div><div class="eyebrow">AI-POWERED MATCHING</div><h2>Potential matches</h2></div></section>
+<div class="match-list">{% for score,d,o in matches %}
+<div class="match-card-expanded panel">
+  <a href="{{url_for('item_detail',item_id=o.id)}}" class="match-header">
+    <div><span class="pill {{o.type}}">{{o.type}}</span><h3>{{o.title}}</h3><p>📍 {{o.location}} · {{o.date_time[:10]}}</p></div>
+    <div class="score">{{score}}%<small>match</small></div>
+  </a>
+  <div class="match-breakdown">
+    <div class="eyebrow">AI MATCH ANALYSIS</div>
+    <div class="match-overall">
+      <strong>Overall similarity: {{score}}%</strong>
+      <div class="progress-bar"><div class="progress-fill" style="width:{{score}}%"></div></div>
+    </div>
+    <div class="match-components">
+      <div class="match-component">
+        <span>Text similarity</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.text}}%"></div></div>
+        <strong>{{d.text}}%</strong>
+      </div>
+      <div class="match-component">
+        <span>Image similarity</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.image}}%"></div></div>
+        <strong>{{d.image}}%</strong>
+      </div>
+      <div class="match-component">
+        <span>Location similarity</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.location}}%"></div></div>
+        <strong>{{d.location}}%</strong>
+      </div>
+      <div class="match-component">
+        <span>Date proximity</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.date}}%"></div></div>
+        <strong>{{d.date}}%</strong>
+      </div>
+      <div class="match-component">
+        <span>Category match</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.category}}%"></div></div>
+        <strong>{{d.category}}%</strong>
+      </div>
+      <div class="match-component">
+        <span>Color/brand</span>
+        <div class="progress-bar small"><div class="progress-fill" style="width:{{d.color}}%"></div></div>
+        <strong>{{d.color}}%</strong>
+      </div>
+    </div>
+    <div class="match-explanation">
+      <span>Evidence:</span>
+      {% if d.category == 100 %}<span>✓ Same category</span>{% endif %}
+      {% if d.location >= 70 %}<span>✓ Nearby location</span>{% endif %}
+      {% if d.date >= 70 %}<span>✓ Close date</span>{% endif %}
+      {% if d.text >= 70 %}<span>✓ Similar description</span>{% endif %}
+      {% if d.image >= 70 %}<span>✓ Similar image</span>{% endif %}
+      {% if d.color > 0 %}<span>✓ Similar color/brand</span>{% endif %}
+    </div>
+    <div class="match-uncertainties" style="margin-top:12px;padding:12px;background:var(--panel2);border-radius:8px;border-left:3px solid var(--muted);">
+      <span style="color:var(--muted);font-size:12px;">⚠ This is an AI recommendation. Manual verification required before claiming.</span>
+    </div>
+  </div>
+</div>
+{% else %}<div class="empty">No strong potential matches yet.</div>{% endfor %}</div>
+
+<div class="section" style="margin-top:40px;">
+  <h2>Understanding AI Matches</h2>
+  <p class="muted">CampusFind uses multimodal AI to match items. Scores are based on text, image, location, date, category, and visual attributes. Always verify matches manually before claiming.</p>
+  <a href="{{ url_for('ai_explanation') }}" class="btn">Learn how AI matching works</a>
+</div>
+{% endblock %}

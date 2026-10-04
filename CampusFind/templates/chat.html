@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant - CampusFind{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">AI ASSISTANT</div>
+  <h1>CampusFind AI</h1>
+  <p class="muted">Ask me anything about lost and found items</p>
+</div>
+
+<div class="section">
+  <div class="chat-container" data-user-id="{{ current_user.id if current_user else '' }}">
+    <div class="chat-messages" id="chatMessages">
+      <div class="message ai">
+        <div class="message-content">
+          <p>Hi! I'm CampusFind AI. I can help you:</p>
+          <ul>
+            <li>Search for lost or found items</li>
+            <li>Report a lost item</li>
+            <li>Check your matches</li>
+            <li>Get campus recovery tips</li>
+          </ul>
+          <p>How can I help you today?</p>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <form id="chatForm" class="chat-form">
+        <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
+        <button type="submit" class="btn primary">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Quick Actions</h3>
+  <div class="card-grid">
+    <button class="card" onclick="sendQuickMessage('I lost my black wallet')">
+      <h3>🔍 Find Lost Item</h3>
+      <p>Search for something you lost</p>
+    </button>
+    <button class="card" onclick="sendQuickMessage('Report a lost item')">
+      <h3>📝 Report Lost</h3>
+      <p>Report something you lost</p>
+    </button>
+    <button class="card" onclick="sendQuickMessage('Check my matches')">
+      <h3>🎯 My Matches</h3>
+      <p>View your potential matches</p>
+    </button>
+    <button class="card" onclick="sendQuickMessage('What should I do if I find something?')">
+      <h3>💡 Get Tips</h3>
+      <p>Recovery tips and advice</p>
+    </button>
+  </div>
+</div>
+
+<style>
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+}
+
+.message-content p {
+  margin: 0 0 8px 0;
+}
+
+.message-content p:last-child {
+  margin: 0;
+}
+
+.message-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.chat-input-area {
+  padding: 16px;
+  border-top: 1px solid var(--line);
+  background: var(--panel2);
+}
+
+.chat-form {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.chat-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.chat-form button {
+  white-space: nowrap;
+}
+
+.report-item {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+</style>
+
+<script>
+let chatState = {};
+
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (message) {
+    sendMessage(message);
+    input.value = '';
+  }
+});
+
+function sendQuickMessage(message) {
+  sendMessage(message);
+}
+
+function sendMessage(message) {
+  const chatMessages = document.getElementById('chatMessages');
+  
+  // Add user message
+  chatMessages.innerHTML += `
+    <div class="message user">
+      <div class="message-content">
+        <p>${escapeHtml(message)}</p>
+      </div>
+    </div>
+  `;
+  
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  // Send to AI
+  const chatContainer = document.querySelector('.chat-container');
+  const userId = chatContainer.dataset.userId || null;
+  fetch('/api/ai/assistant', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message,
+      user_id: userId,
+      state: chatState
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      chatState = data.state || {};
+      
+      chatMessages.innerHTML += `
+        <div class="message ai">
+          <div class="message-content">
+            <p>${escapeHtml(data.response)}</p>
+          </div>
+        </div>
+      `;
+      
+      // Add action buttons if available
+      if (data.actions && data.actions.length > 0) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'message ai';
+        actionsDiv.innerHTML = '<div class="message-content">';
+        
+        data.actions.forEach(action => {
+          actionsDiv.innerHTML += `<button class="btn small" onclick="${action.onclick}">${action.label}</button> `;
+        });
+        
+        actionsDiv.innerHTML += '</div>';
+        chatMessages.appendChild(actionsDiv);
+      }
+      
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+      chatMessages.innerHTML += `
+        <div class="message ai">
+          <div class="message-content">
+            <p>Sorry, I encountered an error. Please try again.</p>
+          </div>
+        </div>
+      `;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  })
+  .catch(error => {
+    chatMessages.innerHTML += `
+      <div class="message ai">
+        <div class="message-content">
+          <p>Sorry, I'm having trouble connecting. Please try again.</p>
+        </div>
+      </div>
+    `;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+{% endblock %}
