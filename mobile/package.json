@@ -1,0 +1,24 @@
+{
+  "name": "campusfind",
+  "version": "1.0.0",
+  "description": "CampusFind - Intelligent Campus Lost & Found",
+  "main": "index.js",
+  "scripts": {
+    "android": "cap run android",
+    "build": "cap sync android"
+  },
+  "keywords": ["campus", "lost", "found", "ai"],
+  "author": "CampusFind",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/core": "^6.0.2",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/keyboard": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

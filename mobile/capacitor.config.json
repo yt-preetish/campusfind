@@ -1,0 +1,40 @@
+{
+  "appId": "com.campusfind.app",
+  "appName": "CampusFind",
+  "webDir": "www",
+  "server": {
+    "url": "https://campusfind-1-yrgg.onrender.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "",
+      "keystoreAlias": "",
+      "keystoreAliasPassword": "",
+      "keystorePassword": ""
+    }
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#667eea",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "androidSpinnerStyle": "large",
+      "spinnerColor": "#ffffff"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#667eea"
+    },
+    "Keyboard": {
+      "resize": "body"
+    },
+    "Haptics": {
+      "enabled": true
+    }
+  }
+}

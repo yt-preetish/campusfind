@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- CampusFind Brand Colors -->
+    <color name="splash_background">#667eea</color>
+    <color name="primary">#667eea</color>
+    <color name="primary_dark">#764ba2</color>
+    
+    <!-- Capacitor Default Colors (preserved for compatibility) -->
+    <color name="colorPrimary">#667eea</color>
+    <color name="colorPrimaryDark">#764ba2</color>
+    <color name="colorAccent">#667eea</color>
+</resources>

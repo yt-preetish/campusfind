@@ -1,0 +1,10 @@
+# Mobile dependencies
+mobile/node_modules/
+
+# Android generated files
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+
+# Android local configuration
+mobile/android/local.properties

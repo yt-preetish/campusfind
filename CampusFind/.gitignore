@@ -18,4 +18,4 @@ campusfind.db
 *.db-wal
 .env
 static/uploads/*
-!static/uploads/.gitkeep
+!static/uploads/.gitkeep 
