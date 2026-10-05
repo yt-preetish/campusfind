@@ -183,38 +183,35 @@ The UI adapts to different screen sizes while maintaining a consistent user expe
 
 - Windsurf
 - Windsurf AI
+System Architecture
+
+```mermaid
+flowchart TD
+    U[👤 User<br/>Desktop / Mobile]
+
+    UI[🌐 CampusFind Frontend<br/>HTML / CSS / JavaScript]
+
+    B[⚙️ Flask Backend<br/>Authentication • APIs • Business Logic]
+
+    DB[(🗄️ Database)]
+
+    AI[🤖 AI Services]
+
+    MAP[🗺️ Maps & External APIs]
+
+    ADMIN[🛡️ Admin Dashboard]
+
+    U --> UI
+    UI --> B
+
+    B --> DB
+    B --> AI
+    B --> MAP
+    B --> ADMIN
+
+    ADMIN --> DB
+    AI --> DB
+```
 
 
 
- System Architecture
-
-'
-                    ┌─────────────────────┐
-                    │      User           │
-                    │  Desktop / Mobile   │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │   CampusFind UI     │
-                    │ HTML / CSS / JS     │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │   Flask Backend     │
-                    │ Authentication      │
-                    │ APIs / Business Logic│
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-              ▼                ▼                ▼
-       ┌────────────┐   ┌─────────────┐  ┌─────────────┐
-       │  Database  │   │ AI Services │  │ Maps / APIs │
-       └────────────┘   └─────────────┘  └─────────────┘
-                               │
-                               ▼
-                       ┌──────────────┐
-                       │ Admin System │
-                       └──────────────┘
